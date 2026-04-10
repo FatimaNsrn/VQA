@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VQA — Visual Question Answering</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #f5f5f0;
+    --white:    #ffffff;
+    --border:   #e8e8e2;
+    --text:     #1a1a1a;
+    --muted:    #888880;
+    --accent:   #2563eb;
+    --accent-l: #eff6ff;
+    --success:  #16a34a;
+    --radius:   16px;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 48px 20px 80px;
+  }
+
+  /* ── Header ─────────────────────── */
+  header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  .tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: var(--accent-l);
+    padding: 4px 14px;
+    border-radius: 99px;
+    margin-bottom: 16px;
+  }
+
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(28px, 5vw, 44px);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    color: var(--text);
+    margin-bottom: 10px;
+  }
+
+  .subtitle {
+    font-size: 14px;
+    color: var(--muted);
+  }
+
+  /* ── Card ───────────────────────── */
+  .card {
+    width: 100%;
+    max-width: 680px;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+
+  /* ── Upload zone ────────────────── */
+  .upload-zone {
+    position: relative;
+    min-height: 280px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 0.15s;
+    overflow: hidden;
+  }
+
+  .upload-zone:hover { background: #fafaf8; }
+
+  .upload-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .upload-icon {
+    width: 52px;
+    height: 52px;
+    border: 1.5px dashed #c8c8c0;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .upload-icon svg {
+    width: 22px;
+    height: 22px;
+    stroke: var(--muted);
+    fill: none;
+    stroke-width: 1.5;
+  }
+
+  .upload-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .upload-sub {
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  /* preview image */
+  #previewImg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 16px;
+    display: none;
+  }
+
+  .change-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(93, 76, 53, 0.9);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    color: var(--muted);
+    padding: 5px 12px;
+    cursor: pointer;
+    display: none;
+    backdrop-filter: blur(4px);
+  }
+
+  .change-btn:hover { color: var(--text); }
+
+  /* ── Question row ───────────────── */
+  .question-area {
+    padding: 20px 24px;
+  }
+
+  .q-label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  .q-row {
+    display: flex;
+    gap: 10px;
+  }
+
+  #questionInput {
+    flex: 1;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    padding: 11px 14px;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    background: var(--bg);
+  }
+
+  #questionInput::placeholder { color: #bbb; }
+
+  #questionInput:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+    background: var(--white);
+  }
+
+  .ask-btn {
+    background: #3a3a3a;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 11px 22px;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+    white-space: nowrap;
+  }
+
+  .ask-btn:hover  { background: #222222; }
+  .ask-btn:active { transform: scale(0.97); }
+
+  /* ── Answer ─────────────────────── */
+  .answer-area {
+    padding: 20px 24px;
+    border-top: 1px solid var(--border);
+    display: none;
+  }
+
+  .answer-area.visible { display: block; }
+
+  .answer-tag {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--success);
+    margin-bottom: 8px;
+  }
+
+  .answer-text {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(24px, 4vw, 36px);
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.01em;
+  }
+
+  .answer-question {
+    margin-top: 6px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  /* ── History ────────────────────── */
+  .history {
+    width: 100%;
+    max-width: 680px;
+  }
+
+  .history-title {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+    padding-left: 4px;
+  }
+
+  .history-item {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 8px;
+  }
+
+  .history-q { font-size: 13px; color: var(--muted); flex: 1; }
+  .history-a { font-size: 14px; font-weight: 600; color: var(--accent); white-space: nowrap; }
+
+  /* ── Reset btn ──────────────────── */
+  .reset-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    color: var(--muted);
+    padding: 9px 18px;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: border-color 0.15s, color 0.15s;
+  }
+
+  .reset-btn:hover { border-color: #ccc; color: var(--text); }
+
+  /* loading state */
+  .ask-btn.loading { background: #888; cursor: not-allowed; }
+</style>
+</head>
+<body data-image="{{ image_path or '' }}">
+
+<header>
+  <div class="tag">Visual Question Answering</div>
+  <h1>Ask anything about<br>your image</h1>
+  <p class="subtitle">Fine-tuned BLIP · VQA v2 · 5,000 samples</p>
+</header>
+
+<div class="card">
+
+  <!-- Upload zone -->
+  <div class="upload-zone" id="uploadZone">
+    <div class="upload-placeholder" id="placeholder">
+      <div class="upload-icon">
+        <svg viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
+        </svg>
+      </div>
+      <span class="upload-label">Click to upload an image</span>
+      <span class="upload-sub">JPG, PNG, WEBP</span>
+    </div>
+    <img id="previewImg" alt="Preview">
+    <button class="change-btn" id="changeBtn" type="button">change</button>
+  </div>
+
+  <!-- Question -->
+  <div class="question-area">
+    <p class="q-label">Your question</p>
+    <div class="q-row">
+      <form id="qaForm" method="POST" enctype="multipart/form-data" style="display:contents;">
+        <input type="file" name="image" id="fileInput" style="display:none;" accept="image/*">
+        <input
+          type="text"
+          name="question"
+          id="questionInput"
+          placeholder="What color is the car? / How many people?"
+          autocomplete="off"
+          required
+        >
+        <button type="submit" class="ask-btn" id="askBtn">Ask</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Answer -->
+  {% if answer %}
+  <div class="answer-area visible">
+    <p class="answer-tag">Answer</p>
+    <p class="answer-text">{{ answer }}</p>
+    <p class="answer-question">"{{ request.form.get('question', '') }}"</p>
+  </div>
+  {% endif %}
+
+</div>
+
+<!-- History (if you want to track per session, handle in Flask) -->
+
+<form action="/reset" method="POST" style="display:inline;">
+  <button type="submit" class="reset-btn">Start over</button>
+</form>
+
+<script>
+  const uploadZone  = document.getElementById('uploadZone');
+  const fileInput   = document.getElementById('fileInput');
+  const previewImg  = document.getElementById('previewImg');
+  const placeholder = document.getElementById('placeholder');
+  const changeBtn   = document.getElementById('changeBtn');
+  const askBtn      = document.getElementById('askBtn');
+  const qaForm      = document.getElementById('qaForm');
+
+  // Click zone to trigger file input
+  uploadZone.addEventListener('click', () => fileInput.click());
+  changeBtn.addEventListener('click', e => { e.stopPropagation(); fileInput.click(); });
+
+  // Drag and drop
+  uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.style.background = '#f0f4ff'; });
+  uploadZone.addEventListener('dragleave', () => { uploadZone.style.background = ''; });
+  uploadZone.addEventListener('drop', e => {
+    e.preventDefault();
+    uploadZone.style.background = '';
+    const file = e.dataTransfer.files[0];
+    if (file) { fileInput.files = e.dataTransfer.files; showPreview(file); }
+  });
+
+  // File selected
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files[0]) showPreview(fileInput.files[0]);
+  });
+
+function showPreview(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    previewImg.src = e.target.result;
+    previewImg.style.display = 'block';
+    placeholder.style.display = 'none';
+    changeBtn.style.display = 'block';
+    const answerArea = document.querySelector('.answer-area');
+    if (answerArea) answerArea.classList.remove('visible');
+  };
+  reader.readAsDataURL(file);
+}
+
+  // Loading state on submit
+  qaForm.addEventListener('submit', () => {
+    askBtn.textContent = 'Thinking...';
+    askBtn.classList.add('loading');
+    askBtn.disabled = true;
+  });
+
+  // Restore image preview if answer exists (page reloaded after POST)
+const savedImage = document.body.dataset.image;
+if (savedImage) {
+  previewImg.src = savedImage;
+  previewImg.style.display = 'block';
+  placeholder.style.display = 'none';
+  changeBtn.style.display = 'block';
+}
+
+  function resetAll() {
+    fetch('/reset', { method: 'POST' }).then(() => location.reload());
+  }
+</script>
+
+</body>
+</html>
