@@ -7,11 +7,12 @@ Upload an image → type a question → get an answer.
 
 ## Project Structure
 
-├── app.py                  # Flask backend
-├── model_loader.py         # Model loading and inference
+vqa/
+├── app.py               #Flask backend
+├── model_loader.py      # Model loading and inference
 ├── templates/
-│   └── index.html          # Frontend UI
-└── blip_vqa_finetuned/     # Fine-tuned model weights (download separately)
+│   └── index.html       # Frontend UI
+└── blip_vqa_finetuned/  # Fine-tuned model weights (download separately)
 
 ## How It Works
 - **Model**: BLIP (blip-vqa-base) fine-tuned on 5,000 samples from VQA v2
